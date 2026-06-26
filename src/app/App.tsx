@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -42,6 +43,7 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       <Toaster />
+      <Analytics />
     </>
   );
 }
