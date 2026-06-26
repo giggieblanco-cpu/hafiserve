@@ -1,0 +1,26 @@
+---- Servers and domain names check
+
+Getting IP for NS1.HOSTRY.COM: 185.186.246.19
+Getting IP for NS2.HOSTRY.COM: 204.155.151.229
+Getting IP for NS3.HOSTRY.COM: 195.123.233.100
+Getting IP for NS4.HOSTRY.COM: 45.32.157.198
+
+---- Checking SOA records for HAFISERVE.EU.ORG
+
+SOA from NS1.HOSTRY.COM at 185.186.246.19: serial 2026062001 (12.432 ms)
+SOA from NS2.HOSTRY.COM at 204.155.151.229: serial 2026062001 (113.195 ms)
+SOA from NS3.HOSTRY.COM at 195.123.233.100: serial 2026062001 (75.944 ms)
+SOA from NS4.HOSTRY.COM at 45.32.157.198: serial 2026062001 (18.672 ms)
+
+---- Checking NS records for HAFISERVE.EU.ORG
+
+NS from NS1.HOSTRY.COM at 185.186.246.19: ok (12.092 ms)
+NS from NS2.HOSTRY.COM at 204.155.151.229: ok (114.049 ms)
+NS from NS3.HOSTRY.COM at 195.123.233.100: ok (81.393 ms)
+NS from NS4.HOSTRY.COM at 45.32.157.198: ok (19.298 ms)
+
+
+No error, storing for validation...
+Saved as request 20260620193544-arf-48527
+
+Done

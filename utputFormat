@@ -1,0 +1,23 @@
+HTTP/1.1 401 Unauthorized
+Date: Sat, 20 Jun 2026 09:15:28 GMT
+Content-Type: application/json
+Transfer-Encoding: chunked
+Connection: keep-alive
+CF-Ray: a0e9ab4bba5f7885-JNB
+CF-Cache-Status: DYNAMIC
+Access-Control-Allow-Origin: *
+set-cookie: __cf_bm=l4fasEj_sEfSDy.c9TNnv.iFvl.jERXp3E8wPcViG6o-1781946927.952949-1.0.1.1-MOrV3RXwSk3QVldnueUjWihlKDCsTNNTPltFZSiYsFnRBwp0xRf6o2KfD69pi6JfHy1omqDGBvPYe2aFJYhVyfiZPIGWnkoyf4sCxwMRz7dyTOd4endleumcadwCGyrg; HttpOnly; SameSite=None; Secure; Path=/; Domain=supabase.co; Expires=Sat, 20 Jun 2026 09:45:28 GMT
+Server: cloudflare
+Vary: Accept-Encoding
+X-Content-Type-Options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: UNAUTHORIZED_INVALID_JWT_FORMAT
+sb-gateway-version: 1
+sb-project-ref: yvtehjfwuhotkjdlogvz
+sb-request-id: 019ee450-4b54-7f35-b08d-4f37c33f8f64
+x-sb-edge-region: eu-central-2
+x-served-by: supabase-edge-runtime
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+alt-svc: h3=":443"; ma=86400
+
+{"code":"UNAUTHORIZED_INVALID_JWT_FORMAT","message":"Auth header is not 'Bearer {token}'"}
