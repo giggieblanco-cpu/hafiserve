@@ -1,9 +1,24 @@
 import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
+import nodemailer from "npm:nodemailer";
 import * as kv from "./kv_store.tsx";
 
 const app = new Hono();
+
+const gmailTransporter = (() => {
+  const user = Deno.env.get("GMAIL_USER");
+  const pass = Deno.env.get("GMAIL_APP_PASSWORD");
+  if (!user || !pass) return null;
+
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: { user, pass },
+    requireTLS: true,
+  });
+})();
 
 app.use('*', logger(console.log));
 
@@ -21,14 +36,45 @@ app.use(
 // ==================== EMAIL HELPER ====================
 
 async function sendEmail(to: string, subject: string, html: string) {
+  const gmailUser = Deno.env.get("GMAIL_USER");
+  const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
+  const mailFrom = Deno.env.get("MAIL_FROM") || Deno.env.get("FROM_EMAIL") || "HaFi Serve Rwanda <hafiserve.rw@gmail.com>";
+
+  if (gmailUser && gmailAppPassword) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: { user: gmailUser, pass: gmailAppPassword },
+        requireTLS: true,
+      });
+
+      const info = await transporter.sendMail({
+        from: mailFrom,
+        to,
+        subject,
+        html,
+      });
+
+      console.log("✅ [EMAIL] Successfully sent via Gmail SMTP to", to, "| MessageId:", info.messageId);
+      return;
+    } catch (err) {
+      console.log("❌ [EMAIL] Gmail SMTP failed for", to, ":", err);
+    }
+  } else {
+    console.log("⚠️ [EMAIL] Gmail SMTP not configured. Falling back to Resend if available.");
+  }
+
   const apiKey = Deno.env.get("RESEND_API_KEY");
   if (!apiKey) {
     console.log("❌ [EMAIL] RESEND_API_KEY environment variable not set! Cannot send email to:", to);
-    console.log("⚠️  [EMAIL] To enable emails: Set RESEND_API_KEY in Supabase project secrets");
+    console.log("⚠️  [EMAIL] To enable emails: Set GMAIL_USER + GMAIL_APP_PASSWORD or RESEND_API_KEY in Supabase project secrets");
     console.log("📧 [EMAIL] Email would have gone to:", to);
     console.log("📧 [EMAIL] Subject:", subject);
     return;
   }
+
   try {
     const fromEmail = Deno.env.get("FROM_EMAIL") || "HaFi Serve Rwanda <onboarding@resend.dev>";
     if (!Deno.env.get("FROM_EMAIL")) {
@@ -49,7 +95,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       }),
     });
     const data = await res.json();
-    console.log("✅ [EMAIL] Successfully sent to", to, "| Status:", data.id || data.error || "SENT");
+    console.log("✅ [EMAIL] Successfully sent via Resend to", to, "| Status:", data.id || data.error || "SENT");
   } catch (err) {
     console.log("❌ [EMAIL] Error sending to", to, ":", err);
   }

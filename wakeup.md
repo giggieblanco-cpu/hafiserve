@@ -20,6 +20,62 @@
 - Your frontend and backend can be hosted on Supabase/Vercel, but Resend still needs a verified `FROM_EMAIL` domain to send real emails.
 - So: yes, Supabase can host the app, but no, it cannot bypass Resend's domain verification requirement.
 
+### Can the app work without email now?
+- Yes. The app can still be hosted and used without email notifications.
+- If `RESEND_API_KEY` is not set, the backend skips sending emails and still saves orders, rooms, messages, and notifications.
+- That means you can launch the website and make it live now, then add domain/email later.
+
+### Supabase health checklist
+Your app uses Supabase Edge Functions and the KV table, so these are the important parts:
+- `Edge Functions` deployment must be healthy
+- `kv_store_47574933` table must exist in the Supabase database
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` must be set in function secrets
+- `RESEND_API_KEY` is only needed if you want email now
+- `FROM_EMAIL` is only needed when you add a verified domain later
+
+### How to verify Supabase is working
+1. Open this health endpoint in your browser:
+   - `https://yvtehjfwuhotkjdlogvz.supabase.co/functions/v1/make-server-47574933/health`
+2. You should get:
+   ```json
+   { "status": "ok" }
+   ```
+3. If you see errors, check Supabase dashboard:
+   - `Edge Functions → make-server-47574933 → Logs`
+   - `Database → Tables → kv_store_47574933`
+   - `Settings → API` for valid project URL
+
+### What to do if PostgREST logs appear
+- Those logs often refer to the Supabase database API layer.
+- Your app code does not use a separate PostgREST schema; it uses the Supabase JS client in the Edge Function.
+- Still, if PostgREST is unhealthy, the function may fail because the database access path is blocked.
+- The main fix is to verify function secrets and the table, then redeploy the function.
+
+### Deploy the app without email first
+1. Push code to GitHub.
+2. Deploy frontend to Vercel or another static host.
+3. Make sure `make-server-47574933` is deployed and healthy.
+4. Skip `RESEND_API_KEY` for now.
+5. The app will still work for:
+   - login and registration
+   - hotel list and details
+   - orders, buffet orders, rooms, bookings
+   - in-app notifications stored in KV
+
+### Add email later
+1. If you want the fastest setup without a domain, add these Supabase secrets first:
+   - `GMAIL_USER`
+   - `GMAIL_APP_PASSWORD`
+   - `MAIL_FROM` (optional, defaults to `HaFi Serve Rwanda <hafiserve.rw@gmail.com>`)
+2. If you prefer Resend, get `RESEND_API_KEY` from Resend.
+3. Buy or verify a domain if you want full delivery.
+4. Add these secrets to Supabase function settings:
+   - `RESEND_API_KEY`
+   - `FROM_EMAIL`
+5. Set `FROM_EMAIL` to a verified sender address like `noreply@yourdomain.com`.
+6. Re-deploy the Supabase Edge Function if needed.
+7. After that, hotel owner and customer emails will start working.
+
 ### Recommended path if you need a working email system now
 - Best: buy a cheap domain like `yourhotelplatform.online` or `yourhotelplatform.xyz`.
 - Cheap domains usually cost between $1 and $5 for the first year.
@@ -50,6 +106,19 @@ Example:
 
 ### Files to change
 - `supabase/functions/server/index.tsx`
+
+### Gmail SMTP option (recommended for now)
+You can use your Gmail account without buying a custom domain.
+
+Set these secrets in Supabase Edge Function settings:
+- `GMAIL_USER` = `hafiserve.rw@gmail.com`
+- `GMAIL_APP_PASSWORD` = your Gmail app password
+- `MAIL_FROM` = `HaFi Serve Rwanda <hafiserve.rw@gmail.com>`
+
+Important:
+- Gmail requires an app password, not your normal Gmail password.
+- Create it in your Google Account → Security → App passwords.
+- If Gmail is not configured, the function will fall back to Resend if `RESEND_API_KEY` exists.
 
 ### What to update once domain is ready
 - In Resend dashboard: add and verify `yourdomain.com`.
