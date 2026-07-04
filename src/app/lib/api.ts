@@ -1,30 +1,41 @@
 import { projectId, publicAnonKey } from "/utils/supabase/info";
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-47574933`;
+const API_BASE_URLS = [
+  `https://${projectId}.supabase.co/functions/v1/server/make-server-47574933`,
+  `https://${projectId}.supabase.co/functions/v1/make-server-47574933`,
+];
 
 // Helper function to make API calls
 async function apiCall(endpoint: string, options: RequestInit = {}) {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
-        ...options.headers,
-      },
-    });
+  let lastError: unknown;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Request failed" }));
-      console.error(`API Error [${endpoint}]:`, error);
-      throw new Error(error.error || "Request failed");
+  for (const API_BASE_URL of API_BASE_URLS) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${publicAnonKey}`,
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Request failed" }));
+        console.warn(`API Warning [${endpoint}] using ${API_BASE_URL}:`, error);
+        lastError = new Error(error.error || "Request failed");
+        continue;
+      }
+
+      return response.json();
+    } catch (error) {
+      console.warn(`API call failed for ${endpoint} using ${API_BASE_URL}:`, error);
+      lastError = error;
     }
-
-    return response.json();
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
-    throw error;
   }
+
+  console.error(`API call failed for ${endpoint} on all candidate URLs`, lastError);
+  throw lastError instanceof Error ? lastError : new Error("Request failed");
 }
 
 // ==================== AUTH API ====================

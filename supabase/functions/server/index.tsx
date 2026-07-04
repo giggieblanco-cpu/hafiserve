@@ -41,6 +41,7 @@ async function sendEmail(to: string, subject: string, html: string) {
   const mailFrom = Deno.env.get("MAIL_FROM") || Deno.env.get("FROM_EMAIL") || "HaFi Serve Rwanda <hafiserve.rw@gmail.com>";
 
   if (gmailUser && gmailAppPassword) {
+    console.log("📧 [EMAIL] Attempting Gmail SMTP for", to);
     try {
       const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -61,6 +62,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       return;
     } catch (err) {
       console.log("❌ [EMAIL] Gmail SMTP failed for", to, ":", err);
+      console.log("⚠️ [EMAIL] Falling back to Resend if configured.");
     }
   } else {
     console.log("⚠️ [EMAIL] Gmail SMTP not configured. Falling back to Resend if available.");
@@ -168,6 +170,15 @@ function emailOrderTemplate(title: string, bodyHtml: string) {
 
 app.get("/make-server-47574933/health", (c) => {
   return c.json({ status: "ok" });
+});
+
+app.get("/make-server-47574933/email-debug", (c) => {
+  return c.json({
+    gmailUserConfigured: Boolean(Deno.env.get("GMAIL_USER")),
+    gmailPasswordConfigured: Boolean(Deno.env.get("GMAIL_APP_PASSWORD")),
+    mailFrom: Deno.env.get("MAIL_FROM") || Deno.env.get("FROM_EMAIL") || "HaFi Serve Rwanda <hafiserve.rw@gmail.com>",
+    resendConfigured: Boolean(Deno.env.get("RESEND_API_KEY")),
+  });
 });
 
 // ==================== AUTH ROUTES ====================
